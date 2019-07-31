@@ -1,39 +1,47 @@
 class Image
 
-  def initialize(array)
-    @image = array
+  def initialize (picture)
+    @picture = picture
+  end
+
+  def get_ones
+    ones = []
+    @picture.each_with_index do |row, row_number|
+      row.each_with_index do |item, col_number|
+        if item == 1
+          ones << [row_number, col_number]
+        end
+      end
+    end
+    ones
+  end
+
+  def blur!(blur_distance)
+    ones = get_ones
+
+    @picture.each_with_index do |row, row_number|
+      row.each_with_index do |item, col_number|
+        ones.each do |found_row_number, found_col_number|
+          if manhattan_distance(col_number, row_number, found_col_number, found_row_number) <= blur_distance
+            @picture[row_number][col_number] = 1
+          end
+        end
+      end
+    end
+  end
+
+  def manhattan_distance (x1, y1, x2, y2)
+    horizontal_distance = (x2 - x1).abs
+    vertical_distance = (y2 - y1).abs
+    # (x2 - x1).abs + (y2 - y1).abs
+    horizontal_distance + vertical_distance
   end
 
   def output_image
-    @image.each do |row|
-      puts row.join
+    @picture.each do |pixel|
+      puts pixel.join
     end
   end
-
-  def blur!(distance=1)
-    distance.times do
-      blur_coords!
-    end
-  end
-
-  private
-
-    def blur_coords!
-      blur_coords = []
-      @image.each_with_index do |row, i|
-        row.each_with_index do |x, row_i|
-          blur_coords << [i, row_i] if x == 1
-        end
-      end
-
-      blur_coords.each do |coord|
-        @image[coord[0]][coord[1] + 1] = 1 if coord[1] + 1 <= @image[coord[0]].length - 1
-        @image[coord[0]][coord[1] - 1] = 1 if coord[1] - 1 >= 0
-        @image[coord[0] + 1][coord[1]] = 1 if coord[0] + 1 <= @image.length - 1
-        @image[coord[0] - 1][coord[1]] = 1 if coord[0] - 1 >= 0
-      end
-    end
-
 end
 
 image = Image.new([
@@ -42,5 +50,11 @@ image = Image.new([
 [0, 0, 0, 1],
 [0, 0, 0, 0]
 ])
+
+# original image
+image.output_image
+puts
+
+# blurred image
 image.blur!(2)
 image.output_image
